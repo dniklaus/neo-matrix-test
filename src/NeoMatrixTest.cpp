@@ -5,8 +5,10 @@
 #include <gfxfont.h>
 #include <Adafruit_NeoMatrix.h>
 #include <Adafruit_NeoPixel.h>
+#include <Timer.h>
+
 #ifndef PSTR
-  #define PSTR // Make Arduino Due happy
+#define PSTR // Make Arduino Due happy
 #endif
 
 #define PIN 12
@@ -36,15 +38,51 @@
 // lines are arranged in columns, progressive order.  The shield uses
 // 800 KHz (v2) pixels that expect GRB color data.
 Adafruit_NeoMatrix matrix = Adafruit_NeoMatrix(16, 16, PIN,
-  NEO_MATRIX_TOP     + NEO_MATRIX_LEFT +
-  NEO_MATRIX_COLUMNS + NEO_MATRIX_ZIGZAG,
-  NEO_GRB            + NEO_KHZ800);
+NEO_MATRIX_TOP + NEO_MATRIX_LEFT +
+NEO_MATRIX_COLUMNS + NEO_MATRIX_ZIGZAG,
+NEO_GRB + NEO_KHZ800);
 
-const uint16_t colors[] = {
-  matrix.Color(255, 0, 0), matrix.Color(0, 255, 0), matrix.Color(0, 0, 255) };
+const uint16_t colors[] =
+{ matrix.Color(255, 0, 0), matrix.Color(0, 255, 0), matrix.Color(0, 0, 255) };
 
-void setup() 
+//-----------------------------------------------------------------------------
+
+int x = matrix.width();
+int pass = 0;
+int counter = 1;
+
+class LoopTimerAdapter : public TimerAdapter
 {
+public:
+  void timeExpired()
+  {
+    matrix.fillScreen(0);
+
+    matrix.fillCircle(6, 6, 6, matrix.Color(190, 190, 190));
+    matrix.setTextColor(colors[0]);
+    matrix.setCursor(0, 1);
+    matrix.print(F("158"));
+
+    if (counter % 2 == 0)
+    {
+      matrix.fillScreen(0);
+      matrix.fillCircle(6, 5, 5, matrix.Color(20, 20, 20));
+
+      matrix.setTextColor(colors[2]);
+      matrix.setCursor(0, 1);
+      matrix.print(String(counter));
+    }
+
+    matrix.show();
+    counter++;
+  }
+};
+
+//-----------------------------------------------------------------------------
+
+void setup()
+{
+  new Timer(new LoopTimerAdapter(), Timer::IS_RECURRING, 1000);
   matrix.begin();
   matrix.setTextWrap(false);
   matrix.setBrightness(10);
@@ -52,30 +90,7 @@ void setup()
   matrix.setTextSize(1);
 }
 
-int x = matrix.width();
-int pass = 0;
-int counter = 1;
-
-void loop() 
+void loop()
 {
-  matrix.fillScreen(0);
-
-  matrix.fillCircle(6, 6, 6, matrix.Color(190, 190, 190));
-  matrix.setTextColor(colors[0]);
-  matrix.setCursor(0, 1);
-  matrix.print(F("158"));
-
-  if (counter % 2 == 0) 
-	{
-    matrix.fillScreen(0);
-		matrix.fillCircle(6, 5, 5, matrix.Color(20, 20, 20));
-    
-    matrix.setTextColor(colors[2]);
-    matrix.setCursor(0, 1);
-    matrix.print(String(counter));   
-  }
-
-	matrix.show();
-  counter++;
-  delay(1000);
+  yield();
 }
