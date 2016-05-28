@@ -1,3 +1,6 @@
 [submodule "lib/timer"]
 	path = lib/timer
 	url = https://github.com/dniklaus/arduino-utils-timer.git
+[submodule "lib/battery"]
+	path = lib/battery
+	url = git@github.com:dniklaus/Battery.git

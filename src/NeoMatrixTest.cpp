@@ -5,6 +5,7 @@
 #include <gfxfont.h>
 #include <Adafruit_NeoMatrix.h>
 #include <Adafruit_NeoPixel.h>
+#include <Battery.h>
 #include <Timer.h>
 #include <SerialCommand.h>
 #include "BlinkTimerControl.h"
@@ -111,7 +112,28 @@ void unrecognized(const char *command)
 }
 
 //-----------------------------------------------------------------------------
+// Battery Voltage Surveillance
+//-----------------------------------------------------------------------------
+class MyBatteryAdapter : public BatteryAdapter
+{
+public:
+  float readBattVoltageSenseFactor()
+  {
+    return 9.239;
+  }
+  unsigned int readRawBattSenseValue()
+  {
+    unsigned int rawBattSenseValue = analogRead(0);
+    return rawBattSenseValue;
+  }
+};
 
+Battery* battery = 0;
+MyBatteryAdapter* batteryAdapter = 0;
+
+//-----------------------------------------------------------------------------
+// Neo Matrix
+//-----------------------------------------------------------------------------
 #define PIN 12
 
 // MATRIX DECLARATION:
@@ -206,6 +228,12 @@ void setup()
     sCmd->setDefaultHandler(unrecognized);      // Handler for command that isn't matched  (says "What?")
   }
   Serial.println("Hello from Neo Matrix Test!\n");
+
+  //-----------------------------------------------------------------------------
+  // Battery Voltage Surveillance
+  //-----------------------------------------------------------------------------
+  batteryAdapter = new MyBatteryAdapter();
+  battery = new Battery(batteryAdapter);
 
   //-----------------------------------------------------------------------------
   // Neo Matrix
